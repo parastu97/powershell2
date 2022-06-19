@@ -1,0 +1,26 @@
+param(
+	[String]$folderSource = '',
+	[String]$folderTarget = '',
+	[String]$compression = 'Optimal',
+	[Int32]$daysRetention = 30
+)
+
+
+# CREATE NEW BACKUP FILE
+
+# Define the name of the archive zip file
+$timestamp = Get-Date -Format FileDateTime
+$destination = $folderTarget +  '\Backup' + $timestamp + '.zip'
+
+# Backup the source folder as a zip file into the target folder
+Compress-Archive -Path $folderSource -CompressionLevel $compression -DestinationPath $destination
+
+
+# DELETE OLD BACKUP FILES
+
+# Evaluate the cutoff date for deletion
+$dateCurrent = Get-Date
+$dateOldest = $dateCurrent.AddDays( 0 - $daysRetention )
+
+# Delete old backup files
+Get-ChildItem $folderTarget | Where-Object { $_.LastWriteTime -lt $dateOldest } | Remove-Item -Force
